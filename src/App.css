@@ -1,0 +1,386 @@
+.app-background {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, #ffdde1 0%, #d6c8ff 45%, #c8f4ff 100%);
+  font-family: 'Comic Sans MS', 'Trebuchet MS', system-ui, sans-serif;
+}
+
+.card {
+  background: #ffffffee;
+  border-radius: 28px;
+  box-shadow: 0 12px 32px rgba(120, 80, 160, 0.25);
+  padding: 2.5rem 2rem;
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+}
+
+.card h1 {
+  margin-top: 0;
+  color: #8a4baf;
+  font-size: 2rem;
+}
+
+.subtitle {
+  color: #b06fc9;
+  margin-top: -0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.preset-option {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.8rem;
+  border: 2px solid #eadcf5;
+  border-radius: 16px;
+  background: #fbf7ff;
+  cursor: pointer;
+  text-align: left;
+}
+
+.preset-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.preset-option:focus-within {
+  outline: 2px solid #b18cff;
+  outline-offset: 2px;
+}
+
+.preset-option.selected {
+  border-color: #b18cff;
+  background: linear-gradient(135deg, #ffe6f2, #efe6ff);
+}
+
+.preset-name {
+  font-weight: bold;
+  color: #7a3fae;
+  font-size: 1.1rem;
+}
+
+.preset-tagline {
+  font-size: 0.85rem;
+  color: #8a7a96;
+}
+
+fieldset.locked {
+  opacity: 0.75;
+}
+
+fieldset {
+  border: 2px dashed #e2b6f0;
+  border-radius: 16px;
+  margin-bottom: 1.25rem;
+  text-align: left;
+}
+
+legend {
+  color: #8a4baf;
+  font-weight: bold;
+  padding: 0 0.5rem;
+}
+
+.op-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0.6rem 0;
+  gap: 1rem;
+}
+
+.max-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  color: #6b5b73;
+}
+
+.max-label input {
+  width: 4rem;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 1rem 0;
+  gap: 1rem;
+  text-align: left;
+}
+
+.row input[type='number'] {
+  width: 6rem;
+  flex-shrink: 0;
+}
+
+input[type='number'] {
+  border-radius: 10px;
+  border: 2px solid #e2b6f0;
+  padding: 0.4rem 0.6rem;
+  font-size: 1rem;
+}
+
+.error {
+  color: #d1476b;
+  font-weight: bold;
+}
+
+.leaderboard-panel {
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 2px dashed #eadcf5;
+}
+
+.leaderboard-panel h3 {
+  margin: 0 0 0.75rem;
+  color: #8a4baf;
+}
+
+.leaderboard {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1rem;
+}
+
+.leaderboard th {
+  color: #a98fc2;
+  font-weight: normal;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.5rem;
+}
+
+.leaderboard td {
+  padding: 0.4rem 0.5rem;
+  color: #5b4a6b;
+  border-top: 1px solid #f3eafa;
+}
+
+.leaderboard th:nth-child(2),
+.leaderboard td:nth-child(2) {
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.leaderboard tr.me td {
+  background: linear-gradient(135deg, #ffe6f2, #efe6ff);
+  color: #7a3fae;
+  font-weight: bold;
+}
+
+.save-score {
+  margin: 1rem 0;
+}
+
+.name-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.name-input {
+  flex: 1;
+  min-width: 0;
+  font-family: inherit;
+  font-size: 1.1rem;
+  padding: 0.5rem 0.8rem;
+  border-radius: 14px;
+  border: 2px solid #e2b6f0;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+  transform: none;
+}
+
+.placement {
+  color: #7a3fae;
+  font-weight: bold;
+  font-size: 1.15rem;
+  margin-bottom: 0.75rem;
+}
+
+.steps-count {
+  color: #8a4baf;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+button {
+  font-family: inherit;
+  border-radius: 999px;
+  border: none;
+  padding: 0.7rem 1.6rem;
+  font-size: 1.1rem;
+  cursor: pointer;
+  background: #f0e0ff;
+  color: #6a4c8c;
+  transition: transform 0.15s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+}
+
+button.primary {
+  background: linear-gradient(135deg, #ff9ecb, #b18cff);
+  color: white;
+  font-weight: bold;
+}
+
+.button-row {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.game-card {
+  position: relative;
+  padding: 3rem 2rem;
+}
+
+.progress-track {
+  width: 100%;
+  height: 12px;
+  background: #f0e0ff;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(135deg, #ff9ecb, #b18cff);
+  border-radius: 999px;
+  transition: width 0.3s linear;
+}
+
+.cancel-button {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  font-size: 1rem;
+  line-height: 1;
+  background: transparent;
+  border: 2px solid #eadcf5;
+  color: #b9a6cc;
+}
+
+.cancel-button:hover {
+  border-color: #d1476b;
+  color: #d1476b;
+  transform: none;
+}
+
+.confirm-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(2px);
+}
+
+.confirm-box {
+  background: #ffffff;
+  border: 2px solid #eadcf5;
+  border-radius: 20px;
+  padding: 1.5rem 1.25rem;
+  box-shadow: 0 8px 24px rgba(120, 80, 160, 0.2);
+  max-width: 100%;
+}
+
+.confirm-box h2 {
+  margin: 0 0 0.5rem;
+  color: #7a3fae;
+}
+
+.confirm-box .button-row {
+  flex-wrap: wrap;
+}
+
+button.danger {
+  background: #fde7ee;
+  color: #c23b62;
+}
+
+.next-button {
+  margin-top: 0.5rem;
+  font-size: 1.3rem;
+  padding: 0.9rem 2.4rem;
+}
+
+.operation-display {
+  font-size: 5rem;
+  font-weight: bold;
+  color: #7a3fae;
+  margin: 1rem 0;
+}
+
+.operation-display.last-step {
+  font-size: 3.5rem;
+  margin: 0 0 1rem;
+}
+
+.running-total {
+  font-size: 1.6rem;
+  color: #4c8c6a;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+.hint {
+  color: #a98fc2;
+  font-size: 1rem;
+}
+
+.answer-input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 1.5rem;
+  text-align: center;
+  padding: 0.6rem;
+  margin: 1rem 0;
+  border-radius: 14px;
+  border: 2px solid #e2b6f0;
+}
+
+.result {
+  margin-top: 1rem;
+}
+
+.correct {
+  color: #3fa66a;
+  font-size: 1.3rem;
+  font-weight: bold;
+}
+
+.incorrect {
+  color: #d1476b;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
