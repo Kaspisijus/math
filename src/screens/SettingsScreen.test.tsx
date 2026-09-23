@@ -62,6 +62,12 @@ describe('presets', () => {
 });
 
 describe('SettingsScreen presets', () => {
+  it('labels each level card with just its name', () => {
+    renderScreen();
+    const names = screen.getAllByRole('radio').map((radio) => radio.closest('label')?.textContent);
+    expect(names).toEqual(['Skruzdėlytė', 'Drambliukas', 'Burtininkė', 'Savi nustatymai']);
+  });
+
   it('selects the first preset by default and shows its settings locked', () => {
     renderScreen();
 

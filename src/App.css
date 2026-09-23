@@ -41,14 +41,14 @@
 
 .preset-option {
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  padding: 0.8rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.9rem 0.6rem;
   border: 2px solid #eadcf5;
   border-radius: 16px;
   background: #fbf7ff;
   cursor: pointer;
-  text-align: left;
+  text-align: center;
 }
 
 .preset-option input {
@@ -71,11 +71,6 @@
   font-weight: bold;
   color: #7a3fae;
   font-size: 1.1rem;
-}
-
-.preset-tagline {
-  font-size: 0.85rem;
-  color: #8a7a96;
 }
 
 fieldset.locked {

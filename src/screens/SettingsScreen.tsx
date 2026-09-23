@@ -21,8 +21,8 @@ const OPERATION_GROUPS: OperationGroup[] = [
 ];
 
 const PRESET_OPTIONS = [
-  ...PRESETS.map((p) => ({ id: p.id as PresetId, name: p.name, tagline: p.tagline })),
-  { id: CUSTOM_PRESET_ID, name: 'Savi nustatymai', tagline: 'Pasirink viską savo nuožiūra' },
+  ...PRESETS.map((p) => ({ id: p.id as PresetId, name: p.name })),
+  { id: CUSTOM_PRESET_ID, name: 'Savi nustatymai' },
 ];
 
 export function SettingsScreen({ initialPresetId, initialSettings, onStart }: Props) {
@@ -91,7 +91,6 @@ export function SettingsScreen({ initialPresetId, initialSettings, onStart }: Pr
               onChange={() => selectPreset(option.id)}
             />
             <span className="preset-name">{option.name}</span>
-            <span className="preset-tagline">{option.tagline}</span>
           </label>
         ))}
       </div>
