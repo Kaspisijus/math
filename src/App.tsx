@@ -33,8 +33,8 @@ function App() {
 
   const advanceGame = useCallback(() => {
     setHistory((prev) => {
-      const lastTotal = prev[prev.length - 1]?.total ?? 0;
-      return [...prev, generateStep(lastTotal, settings)];
+      const lastStep = prev[prev.length - 1];
+      return [...prev, generateStep(lastStep?.total ?? 0, settings, Math.random, lastStep?.operand)];
     });
   }, [settings]);
 
