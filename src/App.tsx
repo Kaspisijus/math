@@ -116,7 +116,7 @@ function App() {
       {screen === 'answer' && history.length > 0 && (
         <AnswerScreen
           presetId={presetId}
-          lastStep={history[history.length - 1]}
+          correctTotal={history[history.length - 1].total}
           stepsCount={history.length}
           onSubmitted={handleAnswerSubmitted}
           result={answerResult}

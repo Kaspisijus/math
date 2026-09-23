@@ -233,14 +233,17 @@ describe('App', () => {
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 
-  it('keeps the last number visible and counts a silent 15 s as no answer, through to the replay', async () => {
+  it('hides the last number on the answer page and counts a silent 15 s as no answer', async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     render(<App />);
 
     await configureAndStart(user);
+    expect(screen.getByText(/^[×÷]\s*1$/)).toBeInTheDocument();
     expireRound();
 
-    expect(screen.getByText(/^[×÷]\s*1$/)).toBeInTheDocument();
+    // Children read a visible last number as one more step to add, so it must be gone.
+    expect(screen.queryByText(/^[×÷]\s*1$/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Paskutinis skaičius/)).not.toBeInTheDocument();
     act(() => {
       vi.advanceTimersByTime(ANSWER_DURATION_SECONDS * 1000);
     });

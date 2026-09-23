@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { ANSWER_DURATION_SECONDS, type Step } from '../types';
+import { ANSWER_DURATION_SECONDS } from '../types';
 import { CUSTOM_PRESET_ID, type PresetId } from '../presets';
 import { SaveScore } from '../components/SaveScore';
 import { ProgressBar } from '../components/ProgressBar';
 import { useCountdown } from '../hooks/useCountdown';
-import { formatStep } from '../formatStep';
 
 export interface AnswerResult {
   // null when the answer time ran out before anything was typed.
@@ -14,7 +13,7 @@ export interface AnswerResult {
 
 interface Props {
   presetId: PresetId;
-  lastStep: Step;
+  correctTotal: number;
   stepsCount: number;
   onSubmitted: (guess: number | null) => void;
   result: AnswerResult | null;
@@ -30,7 +29,7 @@ function parseGuess(raw: string): number | null {
 
 export function AnswerScreen({
   presetId,
-  lastStep,
+  correctTotal,
   stepsCount,
   onSubmitted,
   result,
@@ -38,7 +37,6 @@ export function AnswerScreen({
   onNewRound,
 }: Props) {
   const [guess, setGuess] = useState('');
-  const correctTotal = lastStep.total;
 
   const secondsRemaining = useCountdown(
     ANSWER_DURATION_SECONDS,
@@ -59,9 +57,6 @@ export function AnswerScreen({
     <div className="card">
       <h2>Laikas baigėsi! Koks galutinis rezultatas?</h2>
       <p className="steps-count">Iš viso peržiūrėjai {stepsCount} skaičių</p>
-
-      <p className="hint">Paskutinis skaičius</p>
-      <div className="operation-display last-step">{formatStep(lastStep)}</div>
 
       {!result && (
         <form onSubmit={handleSubmit}>

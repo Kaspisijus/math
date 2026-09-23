@@ -5,9 +5,8 @@ import { useState } from 'react';
 import { AnswerScreen, type AnswerResult } from './AnswerScreen';
 import { submitScore, type SubmitResult } from '../leaderboard/api';
 import type { PresetId } from '../presets';
-import type { Step } from '../types';
 
-const lastStep: Step = { op: '+', operand: 4, total: 7 };
+const CORRECT_TOTAL = 7;
 
 vi.mock('../leaderboard/api', () => ({
   submitScore: vi.fn(),
@@ -20,7 +19,7 @@ function renderAnswer(presetId: PresetId, isCorrect = true) {
   render(
     <AnswerScreen
       presetId={presetId}
-      lastStep={lastStep}
+      correctTotal={CORRECT_TOTAL}
       stepsCount={23}
       onSubmitted={vi.fn()}
       result={{ guess: isCorrect ? 7 : 3, isCorrect }}
@@ -128,11 +127,11 @@ describe('AnswerScreen while answering', () => {
     return (
       <AnswerScreen
         presetId="custom"
-        lastStep={lastStep}
+        correctTotal={CORRECT_TOTAL}
         stepsCount={5}
         onSubmitted={(guess) => {
           onSubmitted(guess);
-          setResult({ guess, isCorrect: guess === lastStep.total });
+          setResult({ guess, isCorrect: guess === CORRECT_TOTAL });
         }}
         result={result}
         onRewind={vi.fn()}
@@ -159,10 +158,6 @@ describe('AnswerScreen while answering', () => {
     vi.useRealTimers();
   });
 
-  it('keeps the last number on screen', () => {
-    render(<Harness onSubmitted={vi.fn()} />);
-    expect(screen.getByText('+4')).toBeInTheDocument();
-  });
 
   it('shows a filling 15-second answer bar', () => {
     render(<Harness onSubmitted={vi.fn()} />);
