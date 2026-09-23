@@ -6,6 +6,15 @@ function randInt(rng: RandomFn, min: number, max: number): number {
   return Math.floor(rng() * (max - min + 1)) + min;
 }
 
+function randIntExcept(rng: RandomFn, min: number, max: number, excluded?: number): number {
+  if (excluded === undefined || excluded < min || excluded > max || min === max) {
+    return randInt(rng, min, max);
+  }
+
+  const value = randInt(rng, min, max - 1);
+  return value >= excluded ? value + 1 : value;
+}
+
 function shuffled<T>(items: T[], rng: RandomFn): T[] {
   const arr = [...items];
   for (let i = arr.length - 1; i > 0; i--) {
@@ -28,21 +37,22 @@ function tryOperation(
   op: Operation,
   total: number,
   settings: Settings,
-  rng: RandomFn
+  rng: RandomFn,
+  previousOperand?: number
 ): Step | null {
   const max = settings.maxByOp[op];
 
   if (op === '+') {
     const upperBound = Math.min(max, settings.maxTotal - total);
     if (upperBound < 1) return null;
-    const operand = randInt(rng, 1, upperBound);
+    const operand = randIntExcept(rng, 1, upperBound, previousOperand);
     return { op, operand, total: total + operand };
   }
 
   if (op === '-') {
     const upperBound = settings.allowNegative ? max : Math.min(max, total);
     if (upperBound < 1) return null;
-    const operand = randInt(rng, 1, upperBound);
+    const operand = randIntExcept(rng, 1, upperBound, previousOperand);
     return { op, operand, total: total - operand };
   }
 
@@ -51,7 +61,7 @@ function tryOperation(
     // positive side), so the cap on operand only matters once the total is positive.
     const upperBound = total > 0 ? Math.min(max, Math.floor(settings.maxTotal / total)) : max;
     if (upperBound < 1) return null;
-    const operand = randInt(rng, 1, upperBound);
+    const operand = randIntExcept(rng, 1, upperBound, previousOperand);
     return { op, operand, total: total * operand };
   }
 
@@ -59,7 +69,11 @@ function tryOperation(
   // push it outside bounds that the current total already satisfies.
   const divisors = divisorsOf(total, max);
   if (divisors.length === 0) return null;
-  const operand = divisors[Math.floor(rng() * divisors.length)];
+  const eligibleDivisors =
+    previousOperand === undefined || divisors.length === 1
+      ? divisors
+      : divisors.filter((divisor) => divisor !== previousOperand);
+  const operand = eligibleDivisors[Math.floor(rng() * eligibleDivisors.length)];
   return { op, operand, total: total === 0 ? 0 : total / operand };
 }
 
@@ -75,17 +89,18 @@ function tryOperation(
 export function generateStep(
   currentTotal: number,
   settings: Settings,
-  rng: RandomFn = Math.random
+  rng: RandomFn = Math.random,
+  previousOperand?: number
 ): Step {
   const candidateOps = shuffled(settings.enabledOps, rng);
 
   for (const op of candidateOps) {
-    const step = tryOperation(op, currentTotal, settings, rng);
+    const step = tryOperation(op, currentTotal, settings, rng, previousOperand);
     if (step) return step;
   }
 
   for (const op of ALL_OPERATIONS) {
-    const step = tryOperation(op, currentTotal, settings, rng);
+    const step = tryOperation(op, currentTotal, settings, rng, previousOperand);
     if (step) return step;
   }
 

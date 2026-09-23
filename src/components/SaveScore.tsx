@@ -7,9 +7,10 @@ import { LeaderboardTable } from './LeaderboardTable';
 interface Props {
   presetId: PresetId;
   points: number;
+  onSaved?: () => void;
 }
 
-export function SaveScore({ presetId, points }: Props) {
+export function SaveScore({ presetId, points, onSaved }: Props) {
   const [name, setName] = useState(loadLastName);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,6 +26,7 @@ export function SaveScore({ presetId, points }: Props) {
     try {
       setResult(await submitScore(presetId, trimmed, points));
       saveLastName(trimmed);
+      onSaved?.();
     } catch {
       setError('Nepavyko išsaugoti – ar serveris įjungtas?');
     } finally {
@@ -52,6 +54,7 @@ export function SaveScore({ presetId, points }: Props) {
         <input
           className="name-input"
           aria-label="Vardas"
+          autoFocus
           maxLength={20}
           value={name}
           onChange={(e) => setName(e.target.value)}

@@ -37,6 +37,8 @@ export function AnswerScreen({
   onNewRound,
 }: Props) {
   const [guess, setGuess] = useState('');
+  const [scoreSaved, setScoreSaved] = useState(false);
+  const [pendingLeave, setPendingLeave] = useState<null | 'rewind' | 'newRound'>(null);
 
   const secondsRemaining = useCountdown(
     ANSWER_DURATION_SECONDS,
@@ -51,6 +53,26 @@ export function AnswerScreen({
     const parsed = parseGuess(guess);
     if (parsed === null) return;
     onSubmitted(parsed);
+  }
+
+  const shouldGuardUnsavedScore =
+    result?.isCorrect === true && presetId !== CUSTOM_PRESET_ID && !scoreSaved;
+
+  function requestLeave(next: 'rewind' | 'newRound') {
+    if (shouldGuardUnsavedScore) {
+      setPendingLeave(next);
+      return;
+    }
+
+    if (next === 'rewind') onRewind();
+    if (next === 'newRound') onNewRound();
+  }
+
+  function continueWithoutSaving() {
+    const next = pendingLeave;
+    setPendingLeave(null);
+    if (next === 'rewind') onRewind();
+    if (next === 'newRound') onNewRound();
   }
 
   return (
@@ -93,14 +115,39 @@ export function AnswerScreen({
             </p>
           )}
           {result.isCorrect && presetId !== CUSTOM_PRESET_ID && (
-            <SaveScore presetId={presetId} points={stepsCount} />
+            <SaveScore presetId={presetId} points={stepsCount} onSaved={() => setScoreSaved(true)} />
           )}
           <div className="button-row">
-            <button className="primary" onClick={onRewind}>
+            <button className="primary" onClick={() => requestLeave('rewind')}>
               Peržiūrėti iš naujo
             </button>
-            <button onClick={onNewRound}>Naujas raundas</button>
+            <button onClick={() => requestLeave('newRound')}>Naujas raundas</button>
           </div>
+
+          {pendingLeave && (
+            <div className="confirm-overlay">
+              <div
+                className="confirm-box"
+                role="alertdialog"
+                aria-modal="true"
+                aria-labelledby="unsaved-score-title"
+                aria-describedby="unsaved-score-text"
+              >
+                <h2 id="unsaved-score-title">Ar tikrai tęsti neišsaugojus rezultato?</h2>
+                <p id="unsaved-score-text" className="hint">
+                  Rezultatas nebus įtrauktas į lyderių lentelę.
+                </p>
+                <div className="button-row">
+                  <button type="button" className="primary" autoFocus onClick={() => setPendingLeave(null)}>
+                    Ne, išsaugoti rezultatą
+                  </button>
+                  <button type="button" className="danger" onClick={continueWithoutSaving}>
+                    Taip, tęsti neišsaugojus
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
