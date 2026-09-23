@@ -87,7 +87,7 @@ export function AnswerScreen({
       {result && (
         <div className="result">
           {result.isCorrect ? (
-            <p className="correct">🎉 Teisingai! Puikus darbas, Milda!</p>
+            <p className="correct">🎉 Teisingai! Puikus darbas!</p>
           ) : result.guess === null ? (
             <p className="incorrect">
               Nespėjai atsakyti! Teisingas atsakymas buvo {correctTotal}.

@@ -151,18 +151,18 @@ describe('SettingsScreen leaderboard panel', () => {
     const user = userEvent.setup();
     fetchLeaderboardMock.mockImplementation(async (presetId) =>
       presetId === 'ant'
-        ? [{ name: 'Milda', points: 25, achievedAt: 1 }]
+        ? [{ name: 'Ona', points: 25, achievedAt: 1 }]
         : [{ name: 'Tėtis', points: 40, achievedAt: 1 }]
     );
     renderScreen();
 
     const panel = screen.getByRole('region', { name: 'Lyderiai' });
-    expect(await within(panel).findByText('Milda')).toBeInTheDocument();
+    expect(await within(panel).findByText('Ona')).toBeInTheDocument();
     expect(fetchLeaderboardMock).toHaveBeenCalledWith('ant');
 
     await user.click(screen.getByRole('radio', { name: /Drambliukas/ }));
     expect(await within(panel).findByText('Tėtis')).toBeInTheDocument();
-    expect(within(panel).queryByText('Milda')).not.toBeInTheDocument();
+    expect(within(panel).queryByText('Ona')).not.toBeInTheDocument();
     expect(fetchLeaderboardMock).toHaveBeenLastCalledWith('elephant');
   });
 

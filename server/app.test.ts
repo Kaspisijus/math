@@ -60,12 +60,12 @@ describe('leaderboard API', () => {
   it('stores a score and reports rank, total and best', async () => {
     const base = await start();
     await post(base, '/api/leaderboard/ant', { name: 'Tėtis', points: 30 });
-    const res = await post(base, '/api/leaderboard/ant', { name: 'Milda', points: 20 });
+    const res = await post(base, '/api/leaderboard/ant', { name: 'Ona', points: 20 });
 
     expect(res.status).toBe(200);
     const body = await json(res);
-    expect(body).toMatchObject({ rank: 2, total: 2, improved: true, best: { name: 'Milda', points: 20 } });
-    expect(body.entries.map((e) => e.name)).toEqual(['Tėtis', 'Milda']);
+    expect(body).toMatchObject({ rank: 2, total: 2, improved: true, best: { name: 'Ona', points: 20 } });
+    expect(body.entries.map((e) => e.name)).toEqual(['Tėtis', 'Ona']);
 
     const board = await json(fetch(`${base}/api/leaderboard/ant`));
     expect(board.entries).toHaveLength(2);
@@ -73,14 +73,14 @@ describe('leaderboard API', () => {
 
   it('keeps the best score and reports improved=false for a lower one', async () => {
     const base = await start();
-    await post(base, '/api/leaderboard/wizard', { name: 'Milda', points: 20 });
-    const body = await json(post(base, '/api/leaderboard/wizard', { name: 'milda', points: 5 }));
-    expect(body).toMatchObject({ improved: false, rank: 1, best: { name: 'Milda', points: 20 } });
+    await post(base, '/api/leaderboard/wizard', { name: 'Ona', points: 20 });
+    const body = await json(post(base, '/api/leaderboard/wizard', { name: 'ona', points: 5 }));
+    expect(body).toMatchObject({ improved: false, rank: 1, best: { name: 'Ona', points: 20 } });
   });
 
   it('keeps boards separate per preset', async () => {
     const base = await start();
-    await post(base, '/api/leaderboard/ant', { name: 'Milda', points: 20 });
+    await post(base, '/api/leaderboard/ant', { name: 'Ona', points: 20 });
     const elephant = await json(fetch(`${base}/api/leaderboard/elephant`));
     expect(elephant.entries).toEqual([]);
   });
@@ -98,7 +98,7 @@ describe('leaderboard API', () => {
   it('rejects invalid submissions with 400', async () => {
     const base = await start();
     expect((await post(base, '/api/leaderboard/ant', { name: '', points: 5 })).status).toBe(400);
-    expect((await post(base, '/api/leaderboard/ant', { name: 'Milda', points: 0 })).status).toBe(400);
+    expect((await post(base, '/api/leaderboard/ant', { name: 'Ona', points: 0 })).status).toBe(400);
     expect((await post(base, '/api/leaderboard/ant', '{not json')).status).toBe(400);
   });
 
@@ -116,14 +116,14 @@ describe('leaderboard API', () => {
 
   it('persists scores so a restarted server still has them', async () => {
     const first = await start();
-    await post(first, '/api/leaderboard/elephant', { name: 'Milda', points: 42 });
+    await post(first, '/api/leaderboard/elephant', { name: 'Ona', points: 42 });
 
     const saved = JSON.parse(await readFile(dataFile, 'utf8'));
-    expect(saved.elephant[0]).toMatchObject({ name: 'Milda', points: 42 });
+    expect(saved.elephant[0]).toMatchObject({ name: 'Ona', points: 42 });
 
     const second = await start();
     const board = await json(fetch(`${second}/api/leaderboard/elephant`));
-    expect(board.entries[0]).toMatchObject({ name: 'Milda', points: 42 });
+    expect(board.entries[0]).toMatchObject({ name: 'Ona', points: 42 });
   });
 
   it('serves the built app with an index.html fallback when staticDir is set', async () => {

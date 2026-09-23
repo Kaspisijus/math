@@ -7,7 +7,7 @@ interface Props {
 
 export function LeaderboardTable({ entries, highlightName }: Props) {
   if (entries.length === 0) {
-    return <p className="hint">Lentelė dar tuščia – būk pirma!</p>;
+    return <p className="hint">Lentelė dar tuščia – užimk pirmą vietą!</p>;
   }
 
   const highlightKey = highlightName?.trim().toLocaleLowerCase('lt');

@@ -13,7 +13,7 @@ import {
 
 describe('validateSubmission', () => {
   it('accepts a valid name and points, trimming the name', () => {
-    expect(validateSubmission({ name: '  Milda ', points: 12 })).toEqual({ name: 'Milda', points: 12 });
+    expect(validateSubmission({ name: '  Ona ', points: 12 })).toEqual({ name: 'Ona', points: 12 });
   });
 
   it('accepts boundary values', () => {
@@ -27,11 +27,11 @@ describe('validateSubmission', () => {
     [{ points: 5 }],
     [{ name: '   ', points: 5 }],
     [{ name: 'a'.repeat(MAX_NAME_LENGTH + 1), points: 5 }],
-    [{ name: 'Milda' }],
-    [{ name: 'Milda', points: 2.5 }],
-    [{ name: 'Milda', points: '5' }],
-    [{ name: 'Milda', points: 0 }],
-    [{ name: 'Milda', points: MAX_POINTS + 1 }],
+    [{ name: 'Ona' }],
+    [{ name: 'Ona', points: 2.5 }],
+    [{ name: 'Ona', points: '5' }],
+    [{ name: 'Ona', points: 0 }],
+    [{ name: 'Ona', points: MAX_POINTS + 1 }],
   ])('rejects %j', (body) => {
     expect(validateSubmission(body)).toBeTypeOf('string');
   });
@@ -48,40 +48,40 @@ describe('isPresetId', () => {
 
 describe('upsertBest', () => {
   const base: Entry[] = [
-    { name: 'Milda', points: 10, achievedAt: 1 },
+    { name: 'Ona', points: 10, achievedAt: 1 },
     { name: 'Tėtis', points: 20, achievedAt: 2 },
   ];
 
   it('adds a new name and keeps entries sorted', () => {
     const { entries, improved } = upsertBest(base, 'Mama', 15, 3);
     expect(improved).toBe(true);
-    expect(entries.map((e) => e.name)).toEqual(['Tėtis', 'Mama', 'Milda']);
+    expect(entries.map((e) => e.name)).toEqual(['Tėtis', 'Mama', 'Ona']);
   });
 
   it('replaces a lower score for the same name', () => {
-    const { entries, improved } = upsertBest(base, 'Milda', 25, 3);
+    const { entries, improved } = upsertBest(base, 'Ona', 25, 3);
     expect(improved).toBe(true);
     expect(entries).toHaveLength(2);
-    expect(entries[0]).toEqual({ name: 'Milda', points: 25, achievedAt: 3 });
+    expect(entries[0]).toEqual({ name: 'Ona', points: 25, achievedAt: 3 });
   });
 
   it('keeps the existing best when the new score is lower or equal', () => {
     for (const points of [5, 10]) {
-      const { entries, improved } = upsertBest(base, 'Milda', points, 3);
+      const { entries, improved } = upsertBest(base, 'Ona', points, 3);
       expect(improved).toBe(false);
-      expect(entries.find((e) => e.name === 'Milda')).toEqual({ name: 'Milda', points: 10, achievedAt: 1 });
+      expect(entries.find((e) => e.name === 'Ona')).toEqual({ name: 'Ona', points: 10, achievedAt: 1 });
     }
   });
 
   it('matches names case-insensitively and shows the latest spelling', () => {
-    const { entries } = upsertBest(base, 'MILDA', 30, 3);
+    const { entries } = upsertBest(base, 'ONA', 30, 3);
     expect(entries).toHaveLength(2);
-    expect(entries[0].name).toBe('MILDA');
+    expect(entries[0].name).toBe('ONA');
   });
 
   it('does not mutate the input array', () => {
     const copy = structuredClone(base);
-    upsertBest(base, 'Milda', 99, 3);
+    upsertBest(base, 'Ona', 99, 3);
     expect(base).toEqual(copy);
   });
 });
@@ -99,6 +99,6 @@ describe('sortEntries / rankOf', () => {
   });
 
   it('returns 0 for a name not on the board', () => {
-    expect(rankOf([], 'Milda')).toBe(0);
+    expect(rankOf([], 'Ona')).toBe(0);
   });
 });

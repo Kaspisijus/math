@@ -34,12 +34,12 @@ function resultWith(overrides: Partial<SubmitResult>): SubmitResult {
   return {
     entries: [
       { name: 'Tėtis', points: 30, achievedAt: 1 },
-      { name: 'Milda', points: 23, achievedAt: 2 },
+      { name: 'Ona', points: 23, achievedAt: 2 },
     ],
     rank: 2,
     total: 2,
     improved: true,
-    best: { name: 'Milda', points: 23, achievedAt: 2 },
+    best: { name: 'Ona', points: 23, achievedAt: 2 },
     ...overrides,
   };
 }
@@ -51,10 +51,10 @@ beforeEach(() => {
 
 describe('AnswerScreen leaderboard entry', () => {
   it('offers a name form pre-filled with the last name used after a correct answer', () => {
-    localStorage.setItem('math-game:last-player-name', 'Milda');
+    localStorage.setItem('math-game:last-player-name', 'Ona');
     renderAnswer('wizard');
 
-    expect(screen.getByLabelText('Vardas')).toHaveValue('Milda');
+    expect(screen.getByLabelText('Vardas')).toHaveValue('Ona');
     expect(screen.getByText(/taškai: 23/)).toBeInTheDocument();
   });
 
@@ -63,24 +63,24 @@ describe('AnswerScreen leaderboard entry', () => {
     submitScoreMock.mockResolvedValue(resultWith({}));
     renderAnswer('wizard');
 
-    await user.type(screen.getByLabelText('Vardas'), 'Milda');
+    await user.type(screen.getByLabelText('Vardas'), 'Ona');
     await user.click(screen.getByRole('button', { name: 'Išsaugoti' }));
 
-    expect(submitScoreMock).toHaveBeenCalledWith('wizard', 'Milda', 23);
+    expect(submitScoreMock).toHaveBeenCalledWith('wizard', 'Ona', 23);
     expect(await screen.findByText('Tu užėmei 2 vietą iš 2! Taškai: 23')).toBeInTheDocument();
     const highlighted = screen.getByRole('row', { current: true });
-    expect(highlighted).toHaveTextContent('Milda');
-    expect(localStorage.getItem('math-game:last-player-name')).toBe('Milda');
+    expect(highlighted).toHaveTextContent('Ona');
+    expect(localStorage.getItem('math-game:last-player-name')).toBe('Ona');
   });
 
   it('tells the player their earlier best stands when the new score is lower', async () => {
     const user = userEvent.setup();
     submitScoreMock.mockResolvedValue(
-      resultWith({ improved: false, rank: 1, best: { name: 'Milda', points: 40, achievedAt: 1 } })
+      resultWith({ improved: false, rank: 1, best: { name: 'Ona', points: 40, achievedAt: 1 } })
     );
     renderAnswer('ant');
 
-    await user.type(screen.getByLabelText('Vardas'), 'Milda');
+    await user.type(screen.getByLabelText('Vardas'), 'Ona');
     await user.click(screen.getByRole('button', { name: 'Išsaugoti' }));
 
     expect(
@@ -93,7 +93,7 @@ describe('AnswerScreen leaderboard entry', () => {
     submitScoreMock.mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce(resultWith({}));
     renderAnswer('ant');
 
-    await user.type(screen.getByLabelText('Vardas'), 'Milda');
+    await user.type(screen.getByLabelText('Vardas'), 'Ona');
     await user.click(screen.getByRole('button', { name: 'Išsaugoti' }));
     expect(await screen.findByText(/Nepavyko išsaugoti/)).toBeInTheDocument();
 

@@ -22,7 +22,7 @@ const OPERATION_GROUPS: OperationGroup[] = [
 
 const PRESET_OPTIONS = [
   ...PRESETS.map((p) => ({ id: p.id as PresetId, name: p.name, tagline: p.tagline })),
-  { id: CUSTOM_PRESET_ID, name: 'Savi nustatymai', tagline: 'Pasirink viską pati' },
+  { id: CUSTOM_PRESET_ID, name: 'Savi nustatymai', tagline: 'Pasirink viską savo nuožiūra' },
 ];
 
 export function SettingsScreen({ initialPresetId, initialSettings, onStart }: Props) {
@@ -61,7 +61,7 @@ export function SettingsScreen({ initialPresetId, initialSettings, onStart }: Pr
 
   function handleStart() {
     if (settings.enabledOps.length === 0) {
-      setError('Pasirink bent vieną veiksmą, kurį Milda galėtų mokytis!');
+      setError('Pasirink bent vieną veiksmą!');
       return;
     }
     if (settings.maxTotal < 1) {
@@ -74,7 +74,7 @@ export function SettingsScreen({ initialPresetId, initialSettings, onStart }: Pr
 
   return (
     <div className="card">
-      <h1>Mildos matematikos nuotykiai</h1>
+      <h1>Matematikos nuotykiai</h1>
       <p className="subtitle">Pasiruošk smagiems skaičiukų žaidimams!</p>
 
       <div className="preset-grid" role="radiogroup" aria-label="Lygis">
