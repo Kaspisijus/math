@@ -118,6 +118,66 @@ describe('AnswerScreen leaderboard entry', () => {
     renderAnswer('custom');
     expect(screen.queryByLabelText('Vardas')).not.toBeInTheDocument();
   });
+
+  it('asks for confirmation before leaving a correct unsaved leaderboard result', async () => {
+    const user = userEvent.setup();
+    const onNewRound = vi.fn();
+    render(
+      <AnswerScreen
+        presetId="ant"
+        correctTotal={CORRECT_TOTAL}
+        stepsCount={23}
+        onSubmitted={vi.fn()}
+        result={{ guess: 7, isCorrect: true }}
+        onRewind={vi.fn()}
+        onNewRound={onNewRound}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Naujas raundas' }));
+
+    expect(onNewRound).not.toHaveBeenCalled();
+    expect(
+      screen.getByRole('alertdialog', {
+        name: 'Are you sure to continue without saving result?',
+      })
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'No, save result' }));
+    expect(onNewRound).not.toHaveBeenCalled();
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Naujas raundas' }));
+    await user.click(screen.getByRole('button', { name: 'Yes, continue without saving' }));
+
+    expect(onNewRound).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not ask for confirmation after the score is saved', async () => {
+    const user = userEvent.setup();
+    const onNewRound = vi.fn();
+    submitScoreMock.mockResolvedValue(resultWith({}));
+    render(
+      <AnswerScreen
+        presetId="ant"
+        correctTotal={CORRECT_TOTAL}
+        stepsCount={23}
+        onSubmitted={vi.fn()}
+        result={{ guess: 7, isCorrect: true }}
+        onRewind={vi.fn()}
+        onNewRound={onNewRound}
+      />
+    );
+
+    await user.type(screen.getByLabelText('Vardas'), 'Ona');
+    await user.click(screen.getByRole('button', { name: 'Išsaugoti' }));
+    expect(await screen.findByText('Tu užėmei 2 vietą iš 2! Taškai: 23')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Naujas raundas' }));
+
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(onNewRound).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('AnswerScreen while answering', () => {

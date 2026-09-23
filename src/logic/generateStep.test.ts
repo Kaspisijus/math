@@ -76,6 +76,16 @@ describe('generateStep', () => {
     expect(step.total).toBe(13);
   });
 
+  it('avoids repeating the previous operand when another operand is available', () => {
+    const settings = settingsWith({ enabledOps: ['+'], maxByOp: { ...DEFAULT_SETTINGS.maxByOp, '+': 3 } });
+    const rng = sequenceRng([0.5]);
+    const step = generateStep(3, settings, rng, 2);
+
+    expect(step.op).toBe('+');
+    expect(step.operand).toBe(3);
+    expect(step.total).toBe(6);
+  });
+
   it('never pushes the total above maxTotal via addition', () => {
     const settings = settingsWith({ enabledOps: ['+'], maxByOp: { ...DEFAULT_SETTINGS.maxByOp, '+': 50 }, maxTotal: 20 });
     for (const total of [0, 5, 19, 20]) {
