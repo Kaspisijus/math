@@ -133,16 +133,16 @@ export function AnswerScreen({
                 aria-labelledby="unsaved-score-title"
                 aria-describedby="unsaved-score-text"
               >
-                <h2 id="unsaved-score-title">Are you sure to continue without saving result?</h2>
+                <h2 id="unsaved-score-title">Ar tikrai tęsti neišsaugojus rezultato?</h2>
                 <p id="unsaved-score-text" className="hint">
-                  The result will not be added to the leaderboard.
+                  Rezultatas nebus įtrauktas į lyderių lentelę.
                 </p>
                 <div className="button-row">
                   <button type="button" className="primary" autoFocus onClick={() => setPendingLeave(null)}>
-                    No, save result
+                    Ne, išsaugoti rezultatą
                   </button>
                   <button type="button" className="danger" onClick={continueWithoutSaving}>
-                    Yes, continue without saving
+                    Taip, tęsti neišsaugojus
                   </button>
                 </div>
               </div>
