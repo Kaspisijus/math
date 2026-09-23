@@ -1,0 +1,51 @@
+name: Test and deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://math.ipark.lt
+    steps:
+      - name: Deploy over SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          # Pinned host key: the job fails instead of trusting a different server.
+          echo "math.ipark.lt ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICgiJoPdnU5IWzWOfRkDOzXCTBSubzEzV2XN6Wegu1tT" > ~/.ssh/known_hosts
+          # The key's forced command on the server runs the deploy script; no command is sent.
+          ssh -T -i ~/.ssh/deploy_key -o IdentitiesOnly=yes root@math.ipark.lt
+
+      - name: Check the site responds
+        run: |
+          for i in $(seq 1 20); do
+            if curl -fsS https://math.ipark.lt/api/leaderboard/ant > /dev/null; then echo "Site is up"; exit 0; fi
+            sleep 3
+          done
+          echo "Site did not respond after deploy" >&2
+          exit 1
