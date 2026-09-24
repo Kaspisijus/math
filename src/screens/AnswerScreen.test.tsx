@@ -139,16 +139,16 @@ describe('AnswerScreen leaderboard entry', () => {
     expect(onNewRound).not.toHaveBeenCalled();
     expect(
       screen.getByRole('alertdialog', {
-        name: 'Are you sure to continue without saving result?',
+        name: 'Ar tikrai tęsti neišsaugojus rezultato?',
       })
     ).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'No, save result' }));
+    await user.click(screen.getByRole('button', { name: 'Ne, išsaugoti rezultatą' }));
     expect(onNewRound).not.toHaveBeenCalled();
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Naujas raundas' }));
-    await user.click(screen.getByRole('button', { name: 'Yes, continue without saving' }));
+    await user.click(screen.getByRole('button', { name: 'Taip, tęsti neišsaugojus' }));
 
     expect(onNewRound).toHaveBeenCalledTimes(1);
   });
