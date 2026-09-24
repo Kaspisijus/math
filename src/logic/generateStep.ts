@@ -57,6 +57,7 @@ function tryOperation(
   }
 
   if (op === '×') {
+    if (Math.abs(total) > max) return null;
     // A non-positive total can only grow further from 0 (never past maxTotal on the
     // positive side), so the cap on operand only matters once the total is positive.
     const upperBound = total > 0 ? Math.min(max, Math.floor(settings.maxTotal / total)) : max;
@@ -67,7 +68,7 @@ function tryOperation(
 
   // op === '÷' — dividing only shrinks the total's magnitude, so it can never
   // push it outside bounds that the current total already satisfies.
-  const divisors = divisorsOf(total, max);
+  const divisors = divisorsOf(total, max).filter((divisor) => Math.abs(total / divisor) <= max);
   if (divisors.length === 0) return null;
   const eligibleDivisors =
     previousOperand === undefined || divisors.length === 1
