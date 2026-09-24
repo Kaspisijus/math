@@ -50,6 +50,10 @@ export function AnswerScreen({
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    submitGuess();
+  }
+
+  function submitGuess() {
     const parsed = parseGuess(guess);
     if (parsed === null) return;
     onSubmitted(parsed);
@@ -93,6 +97,11 @@ export function AnswerScreen({
             autoFocus
             value={guess}
             onChange={(e) => setGuess(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key !== 'Enter') return;
+              e.preventDefault();
+              submitGuess();
+            }}
             placeholder="Tavo atsakymas"
           />
           <button className="primary" type="submit">

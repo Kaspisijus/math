@@ -270,6 +270,19 @@ describe('AnswerScreen while answering', () => {
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
   });
 
+  it('submits when Enter is pressed in the focused answer field', () => {
+    const onSubmitted = vi.fn();
+    render(<Harness onSubmitted={onSubmitted} />);
+    const input = screen.getByPlaceholderText('Tavo atsakymas');
+
+    fireEvent.change(input, { target: { value: '7' } });
+    fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' });
+
+    expect(onSubmitted).toHaveBeenCalledTimes(1);
+    expect(onSubmitted).toHaveBeenCalledWith(7);
+    expect(screen.getByText(/Teisingai!/)).toBeInTheDocument();
+  });
+
   it('ignores a manual submit with an empty field', () => {
     const onSubmitted = vi.fn();
     render(<Harness onSubmitted={onSubmitted} />);
