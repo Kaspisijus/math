@@ -16,7 +16,7 @@ export const PRESETS: Preset[] = [
     name: 'Skruzdėlytė',
     settings: {
       enabledOps: ['+', '-'],
-      maxByOp: { '+': 20, '-': 20, '×': 5, '÷': 5 },
+      maxByOp: { '+': 20, '-': 20, '×': 10, '÷': 10 },
       allowNegative: false,
       maxTotal: 100,
     },

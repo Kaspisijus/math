@@ -54,7 +54,7 @@ describe('presets', () => {
     });
     expect(wizard.settings).toEqual({
       enabledOps: ['+', '-', '×', '÷'],
-      maxByOp: { '+': 20, '-': 20, '×': 5, '÷': 5 },
+      maxByOp: { '+': 20, '-': 20, '×': 10, '÷': 10 },
       allowNegative: false,
       maxTotal: 100,
     });
@@ -98,7 +98,7 @@ describe('SettingsScreen presets', () => {
     await user.click(screen.getByRole('radio', { name: /Burtininkė/ }));
     const multiplicative = groupInputs(/Daugyba \/ Dalyba/);
     expect(multiplicative.checkbox).toBeChecked();
-    expect(multiplicative.max).toHaveValue(5);
+    expect(multiplicative.max).toHaveValue(10);
     expect(groupInputs(/Sudėtis \/ Atimtis/).max).toHaveValue(20);
     expect(screen.getByLabelText(/Viršutinė riba/)).toHaveValue(100);
     expect(multiplicative.max).toBeDisabled();
