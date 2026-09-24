@@ -139,16 +139,16 @@ describe('AnswerScreen leaderboard entry', () => {
     expect(onNewRound).not.toHaveBeenCalled();
     expect(
       screen.getByRole('alertdialog', {
-        name: 'Are you sure to continue without saving result?',
+        name: 'Ar tikrai tęsti neišsaugojus rezultato?',
       })
     ).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'No, save result' }));
+    await user.click(screen.getByRole('button', { name: 'Ne, išsaugoti rezultatą' }));
     expect(onNewRound).not.toHaveBeenCalled();
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Naujas raundas' }));
-    await user.click(screen.getByRole('button', { name: 'Yes, continue without saving' }));
+    await user.click(screen.getByRole('button', { name: 'Taip, tęsti neišsaugojus' }));
 
     expect(onNewRound).toHaveBeenCalledTimes(1);
   });
@@ -268,6 +268,19 @@ describe('AnswerScreen while answering', () => {
     expect(onSubmitted).toHaveBeenCalledTimes(1);
     expect(onSubmitted).toHaveBeenCalledWith(3);
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+  });
+
+  it('submits when Enter is pressed in the focused answer field', () => {
+    const onSubmitted = vi.fn();
+    render(<Harness onSubmitted={onSubmitted} />);
+    const input = screen.getByPlaceholderText('Tavo atsakymas');
+
+    fireEvent.change(input, { target: { value: '7' } });
+    fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' });
+
+    expect(onSubmitted).toHaveBeenCalledTimes(1);
+    expect(onSubmitted).toHaveBeenCalledWith(7);
+    expect(screen.getByText(/Teisingai!/)).toBeInTheDocument();
   });
 
   it('ignores a manual submit with an empty field', () => {
