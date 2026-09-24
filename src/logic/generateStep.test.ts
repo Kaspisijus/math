@@ -121,12 +121,12 @@ describe('generateStep', () => {
   it('only divides when both divisor and result fit within the configured max', () => {
     const settings = settingsWith({ enabledOps: ['÷'], maxByOp: { ...DEFAULT_SETTINGS.maxByOp, '÷': 5 } });
 
-    const maxDividend = generateStep(25, settings, Math.random);
+    const maxDividend = generateStep(25, settings, sequenceRng([0]));
     expect(maxDividend.op).toBe('÷');
     expect(maxDividend.operand).toBe(5);
     expect(maxDividend.total).toBe(5);
 
-    const tooLargeResult = generateStep(30, settings, Math.random);
+    const tooLargeResult = generateStep(30, settings, sequenceRng([0]));
     expect(tooLargeResult.op).not.toBe('÷');
   });
 
