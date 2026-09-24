@@ -106,6 +106,30 @@ describe('generateStep', () => {
     }
   });
 
+  it('only multiplies when both factors fit within the configured max', () => {
+    const settings = settingsWith({ enabledOps: ['×'], maxByOp: { ...DEFAULT_SETTINGS.maxByOp, '×': 5 } });
+
+    const maxByMax = generateStep(5, settings, sequenceRng([0.99]));
+    expect(maxByMax.op).toBe('×');
+    expect(maxByMax.operand).toBe(5);
+    expect(maxByMax.total).toBe(25);
+
+    const tooLargeFactor = generateStep(17, settings, Math.random);
+    expect(tooLargeFactor.op).not.toBe('×');
+  });
+
+  it('only divides when both divisor and result fit within the configured max', () => {
+    const settings = settingsWith({ enabledOps: ['÷'], maxByOp: { ...DEFAULT_SETTINGS.maxByOp, '÷': 5 } });
+
+    const maxDividend = generateStep(25, settings, Math.random);
+    expect(maxDividend.op).toBe('÷');
+    expect(maxDividend.operand).toBe(5);
+    expect(maxDividend.total).toBe(5);
+
+    const tooLargeResult = generateStep(30, settings, Math.random);
+    expect(tooLargeResult.op).not.toBe('÷');
+  });
+
   it('stays within bounds and never crashes when the total is pinned exactly at maxTotal', () => {
     // Only "+" enabled, total already equals the cap: "+" alone is impossible for any
     // positive operand, forcing the fallback chain to kick in.
