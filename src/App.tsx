@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import './App.css';
 import { generateStep } from './logic/generateStep';
 import { useCountdown } from './hooks/useCountdown';
+import { playResultSound } from './sound/resultSound';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { GameScreen } from './screens/GameScreen';
 import { AnswerScreen, type AnswerResult } from './screens/AnswerScreen';
@@ -48,7 +49,9 @@ function App() {
 
   function handleAnswerSubmitted(guess: number | null) {
     const correctTotal = history[history.length - 1].total;
-    setAnswerResult({ guess, isCorrect: guess === correctTotal });
+    const isCorrect = guess === correctTotal;
+    setAnswerResult({ guess, isCorrect });
+    playResultSound(isCorrect);
   }
 
   function handleRewind() {
