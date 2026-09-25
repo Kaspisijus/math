@@ -29,6 +29,7 @@ const CONTENT_TYPES: Record<string, string> = {
   '.png': 'image/png',
   '.ico': 'image/x-icon',
   '.json': 'application/json',
+  '.mp3': 'audio/mpeg',
 };
 
 class HttpError extends Error {

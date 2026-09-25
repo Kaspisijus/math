@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import './App.css';
 import { generateStep } from './logic/generateStep';
 import { useCountdown } from './hooks/useCountdown';
-import { playResultSound } from './sound/resultSound';
+import { playResultSound, preloadResultSounds } from './sound/resultSound';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { GameScreen } from './screens/GameScreen';
 import { AnswerScreen, type AnswerResult } from './screens/AnswerScreen';
@@ -30,6 +30,7 @@ function App() {
     setConfirmingCancel(false);
     setRoundId((id) => id + 1);
     setScreen('game');
+    preloadResultSounds();
   }
 
   const advanceGame = useCallback(() => {

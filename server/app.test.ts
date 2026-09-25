@@ -139,4 +139,16 @@ describe('leaderboard API', () => {
     expect(await (await fetch(`${base}/some/route`)).text()).toBe('<h1>app</h1>');
     expect((await fetch(`${base}/..%2f..%2fsecret`)).status).toBe(404);
   });
+
+  it('serves the result sounds as audio', async () => {
+    const staticDir = join(dir, 'dist');
+    await mkdir(join(staticDir, 'assets'), { recursive: true });
+    await writeFile(join(staticDir, 'index.html'), '<h1>app</h1>');
+    await writeFile(join(staticDir, 'assets', 'success.mp3'), Buffer.from([0xff, 0xfb, 0x90]));
+    const base = await start({ staticDir });
+
+    const sound = await fetch(`${base}/assets/success.mp3`);
+    expect(sound.headers.get('content-type')).toBe('audio/mpeg');
+    expect(new Uint8Array(await sound.arrayBuffer())).toEqual(new Uint8Array([0xff, 0xfb, 0x90]));
+  });
 });

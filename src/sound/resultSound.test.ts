@@ -1,99 +1,90 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Just enough of the Web Audio API to record what gets scheduled; jsdom has none.
-class FakeParam {
-  scheduled: number[] = [];
-  setValueAtTime(value: number) {
-    this.scheduled.push(value);
-    return this;
-  }
-  linearRampToValueAtTime() {
-    return this;
-  }
-  exponentialRampToValueAtTime() {
-    return this;
-  }
+// Stand-ins for the downloaded bytes and the decoded audio, each remembering which file it came from.
+interface FakeFile {
+  url: string;
 }
 
-class FakeNode {
+interface FakeBuffer {
+  decodedFrom: string;
+}
+
+// Just enough of the Web Audio API to record what gets played; jsdom has none.
+class FakeBufferSource {
+  buffer: FakeBuffer | null = null;
   target: unknown = null;
+  started = false;
   connect<T>(target: T): T {
     this.target = target;
     return target;
   }
-}
-
-class FakeOscillator extends FakeNode {
-  type = 'sine';
-  frequency = new FakeParam();
-  startedAt: number | null = null;
-  start(when: number) {
-    this.startedAt = when;
+  start() {
+    this.started = true;
   }
-  stop() {}
-}
-
-class FakeGain extends FakeNode {
-  gain = new FakeParam();
-}
-
-class FakeFilter extends FakeNode {
-  type = 'lowpass';
-  frequency = new FakeParam();
-  Q = new FakeParam();
 }
 
 class FakeAudioContext {
   static instances: FakeAudioContext[] = [];
   static initialState = 'running';
+  static decodeFails = false;
 
-  currentTime = 10;
   state = FakeAudioContext.initialState;
   destination = { name: 'speakers' };
-  oscillators: FakeOscillator[] = [];
-  filters: FakeFilter[] = [];
+  sources: FakeBufferSource[] = [];
+  decoded: string[] = [];
   resume = vi.fn(() => Promise.resolve());
 
   constructor() {
     FakeAudioContext.instances.push(this);
   }
-  createOscillator() {
-    const osc = new FakeOscillator();
-    this.oscillators.push(osc);
-    return osc;
+  createBufferSource() {
+    const source = new FakeBufferSource();
+    this.sources.push(source);
+    return source;
   }
-  createGain() {
-    return new FakeGain();
-  }
-  createBiquadFilter() {
-    const filter = new FakeFilter();
-    this.filters.push(filter);
-    return filter;
+  // Older Safari only has the callback form, so that is the one the module uses.
+  decodeAudioData(
+    data: FakeFile,
+    onSuccess: (buffer: FakeBuffer) => void,
+    onError: (error: Error) => void
+  ) {
+    this.decoded.push(data.url);
+    if (FakeAudioContext.decodeFails) onError(new Error('EncodingError'));
+    else onSuccess({ decodedFrom: data.url });
   }
 }
 
-// A fresh module per test, so its cached AudioContext never leaks between tests.
+const fetchMock = vi.fn(async (url: string) => ({
+  ok: true,
+  status: 200,
+  arrayBuffer: async (): Promise<FakeFile> => ({ url }),
+}));
+
+// A fresh module per test, so its cached AudioContext and sounds never leak between tests.
 async function loadSound() {
   vi.resetModules();
   return import('./resultSound');
 }
 
-function notesOf(ctx: FakeAudioContext, type: string) {
-  const notes = ctx.oscillators.filter((osc) => osc.type === type);
-  return {
-    notes,
-    frequencies: notes.map((osc) => osc.frequency.scheduled[0]),
-    starts: notes.map((osc) => osc.startedAt as number),
-  };
+// Downloading and decoding are chains of promises; let them all run.
+function settle() {
+  return new Promise((resolve) => setTimeout(resolve, 0));
 }
 
-function isIncreasing(values: number[]) {
-  return values.every((value, i) => i === 0 || value > values[i - 1]);
+function played(ctx: FakeAudioContext) {
+  return ctx.sources.filter((source) => source.started).map((source) => source.buffer?.decodedFrom);
+}
+
+function fetchedUrls() {
+  return fetchMock.mock.calls.map(([url]) => url);
 }
 
 beforeEach(() => {
   FakeAudioContext.instances = [];
   FakeAudioContext.initialState = 'running';
+  FakeAudioContext.decodeFails = false;
+  fetchMock.mockClear();
+  vi.stubGlobal('fetch', fetchMock);
 });
 
 afterEach(() => {
@@ -101,41 +92,42 @@ afterEach(() => {
 });
 
 describe('playResultSound', () => {
-  it('plays a rising arpeggio for a correct answer', async () => {
+  it('plays the success recording through the speakers for a correct answer', async () => {
     vi.stubGlobal('AudioContext', FakeAudioContext);
-    const { playResultSound, SUCCESS_NOTES } = await loadSound();
+    const { playResultSound } = await loadSound();
 
     playResultSound(true);
+    await settle();
 
     const [ctx] = FakeAudioContext.instances;
-    const { frequencies, starts } = notesOf(ctx, 'triangle');
-    expect(frequencies).toEqual(SUCCESS_NOTES.map((note) => note.frequency));
-    expect(isIncreasing(frequencies)).toBe(true);
-    expect(starts[0]).toBeGreaterThanOrEqual(ctx.currentTime);
-    expect(isIncreasing(starts)).toBe(true);
-    expect(ctx.filters).toHaveLength(0);
+    expect(played(ctx)).toEqual([expect.stringMatching(/success\.mp3$/)]);
+    expect(ctx.sources[0].target).toBe(ctx.destination);
   });
 
-  it('plays a falling, muffled sad trombone with a wobbling last note for a wrong answer', async () => {
+  it('plays the fail recording for a wrong answer', async () => {
     vi.stubGlobal('AudioContext', FakeAudioContext);
-    const { playResultSound, FAIL_NOTES } = await loadSound();
+    const { playResultSound } = await loadSound();
 
     playResultSound(false);
+    await settle();
 
     const [ctx] = FakeAudioContext.instances;
-    const { notes, frequencies, starts } = notesOf(ctx, 'sawtooth');
-    expect(frequencies).toEqual(FAIL_NOTES.map((note) => note.frequency));
-    expect(isIncreasing([...frequencies].reverse())).toBe(true);
-    expect(isIncreasing(starts)).toBe(true);
+    expect(played(ctx)).toEqual([expect.stringMatching(/fail\.mp3$/)]);
+  });
 
-    expect(ctx.filters.map((filter) => filter.type)).toEqual(['lowpass']);
-    expect(ctx.filters[0].target).toBe(ctx.destination);
+  it('downloads and decodes each recording once, then replays it every round', async () => {
+    vi.stubGlobal('AudioContext', FakeAudioContext);
+    const { playResultSound } = await loadSound();
 
-    // The wobble: a slow sine oscillator, through a depth gain, bends the last note's pitch.
-    const lastNote = notes[notes.length - 1];
-    const [lfo] = ctx.oscillators.filter((osc) => osc.type === 'sine');
-    expect(lfo.frequency.scheduled[0]).toBeLessThan(20);
-    expect((lfo.target as FakeGain).target).toBe(lastNote.frequency);
+    for (const isCorrect of [true, false, true, false]) {
+      playResultSound(isCorrect);
+      await settle();
+    }
+
+    const [ctx] = FakeAudioContext.instances;
+    expect(played(ctx)).toHaveLength(4);
+    expect(fetchedUrls()).toHaveLength(2);
+    expect(ctx.decoded).toHaveLength(2);
   });
 
   it('reuses one audio context across rounds', async () => {
@@ -164,8 +156,53 @@ describe('playResultSound', () => {
     const { playResultSound } = await loadSound();
 
     playResultSound(true);
+    await settle();
 
-    expect(FakeAudioContext.instances).toHaveLength(1);
+    expect(played(FakeAudioContext.instances[0])).toHaveLength(1);
+  });
+
+  it('stays silent, and tries the download again next round, when it fails', async () => {
+    vi.stubGlobal('AudioContext', FakeAudioContext);
+    const { playResultSound } = await loadSound();
+    fetchMock.mockRejectedValueOnce(new Error('offline'));
+
+    playResultSound(false);
+    await settle();
+    const [ctx] = FakeAudioContext.instances;
+    expect(played(ctx)).toEqual([]);
+
+    playResultSound(false);
+    await settle();
+    expect(played(ctx)).toEqual([expect.stringMatching(/fail\.mp3$/)]);
+    expect(fetchedUrls()).toHaveLength(2);
+  });
+
+  it('stays silent when the server answers the download with an error', async () => {
+    vi.stubGlobal('AudioContext', FakeAudioContext);
+    const { playResultSound } = await loadSound();
+    fetchMock.mockResolvedValueOnce({
+      ok: false,
+      status: 404,
+      arrayBuffer: async () => ({ url: 'not found page' }),
+    });
+
+    playResultSound(true);
+    await settle();
+
+    const [ctx] = FakeAudioContext.instances;
+    expect(ctx.decoded).toEqual([]);
+    expect(played(ctx)).toEqual([]);
+  });
+
+  it('stays silent when the recording cannot be decoded', async () => {
+    FakeAudioContext.decodeFails = true;
+    vi.stubGlobal('AudioContext', FakeAudioContext);
+    const { playResultSound } = await loadSound();
+
+    playResultSound(true);
+    await settle();
+
+    expect(played(FakeAudioContext.instances[0])).toEqual([]);
   });
 
   it('stays silent without breaking the game when the browser has no Web Audio', async () => {
@@ -174,6 +211,7 @@ describe('playResultSound', () => {
 
     expect(() => playResultSound(true)).not.toThrow();
     expect(() => playResultSound(false)).not.toThrow();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it('stays silent without breaking the game when audio fails to start', async () => {
@@ -188,5 +226,55 @@ describe('playResultSound', () => {
     const { playResultSound } = await loadSound();
 
     expect(() => playResultSound(false)).not.toThrow();
+  });
+});
+
+describe('preloadResultSounds', () => {
+  it('downloads and decodes both recordings without playing anything', async () => {
+    vi.stubGlobal('AudioContext', FakeAudioContext);
+    const { preloadResultSounds } = await loadSound();
+
+    preloadResultSounds();
+    await settle();
+
+    const [ctx] = FakeAudioContext.instances;
+    expect(fetchedUrls()).toEqual([
+      expect.stringMatching(/success\.mp3$/),
+      expect.stringMatching(/fail\.mp3$/),
+    ]);
+    expect(ctx.decoded).toHaveLength(2);
+    expect(played(ctx)).toEqual([]);
+  });
+
+  it('lets the result sound play without downloading it again', async () => {
+    vi.stubGlobal('AudioContext', FakeAudioContext);
+    const { preloadResultSounds, playResultSound } = await loadSound();
+
+    preloadResultSounds();
+    await settle();
+    preloadResultSounds();
+    playResultSound(true);
+    await settle();
+
+    expect(fetchedUrls()).toHaveLength(2);
+    expect(played(FakeAudioContext.instances[0])).toEqual([expect.stringMatching(/success\.mp3$/)]);
+  });
+
+  it('wakes up a suspended audio context', async () => {
+    FakeAudioContext.initialState = 'suspended';
+    vi.stubGlobal('AudioContext', FakeAudioContext);
+    const { preloadResultSounds } = await loadSound();
+
+    preloadResultSounds();
+
+    expect(FakeAudioContext.instances[0].resume).toHaveBeenCalled();
+  });
+
+  it('does nothing without breaking the game when the browser has no Web Audio', async () => {
+    vi.stubGlobal('AudioContext', undefined);
+    const { preloadResultSounds } = await loadSound();
+
+    expect(() => preloadResultSounds()).not.toThrow();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

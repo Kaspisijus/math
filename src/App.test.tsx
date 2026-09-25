@@ -3,7 +3,7 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from './App';
 import { ANSWER_DURATION_SECONDS, ROUND_DURATION_SECONDS } from './types';
-import { playResultSound } from './sound/resultSound';
+import { playResultSound, preloadResultSounds } from './sound/resultSound';
 
 vi.mock('./leaderboard/api', () => ({
   fetchLeaderboard: vi.fn().mockResolvedValue([]),
@@ -12,9 +12,11 @@ vi.mock('./leaderboard/api', () => ({
 
 vi.mock('./sound/resultSound', () => ({
   playResultSound: vi.fn(),
+  preloadResultSounds: vi.fn(),
 }));
 
 const playResultSoundMock = vi.mocked(playResultSound);
+const preloadResultSoundsMock = vi.mocked(preloadResultSounds);
 
 function pressSpace() {
   act(() => {
@@ -396,6 +398,7 @@ describe('App result sounds', () => {
   beforeEach(() => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     playResultSoundMock.mockClear();
+    preloadResultSoundsMock.mockClear();
   });
 
   afterEach(() => {
@@ -406,6 +409,17 @@ describe('App result sounds', () => {
     await user.type(screen.getByPlaceholderText('Tavo atsakymas'), guess);
     await user.click(screen.getByRole('button', { name: /Patikrinti/ }));
   }
+
+  it('gets the sounds ready when the round starts, well before the answer', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    render(<App />);
+    expect(preloadResultSoundsMock).not.toHaveBeenCalled();
+
+    await configureAndStart(user);
+
+    expect(preloadResultSoundsMock).toHaveBeenCalledTimes(1);
+    expect(playResultSoundMock).not.toHaveBeenCalled();
+  });
 
   it('stays quiet while the answer is still being typed', async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
