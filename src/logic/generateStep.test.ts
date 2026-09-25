@@ -208,6 +208,24 @@ describe('generateStep: the opening step', () => {
     }
   });
 
+  it('with + on, opens anywhere from 1 up to the + max, not only within the × / ÷ max', () => {
+    expect(generateStep([], WIZARD, sequenceRng([0]))).toEqual({ op: '+', operand: 1, total: 1 });
+    expect(generateStep([], WIZARD, sequenceRng([0.99]))).toEqual({ op: '+', operand: 20, total: 20 });
+  });
+
+  it('opens with + even when negative totals are allowed and − is on', () => {
+    const rng = seededRng(16);
+    for (const enabledOps of [['+', '-'], ['+', '-', '×', '÷'], ['-', '×']] as Settings['enabledOps'][]) {
+      const settings = settingsWith({ enabledOps, allowNegative: true });
+      for (let trial = 0; trial < 50; trial++) {
+        const step = generateStep([], settings, rng);
+        expect(step.op).toBe('+');
+        expect(step.total).toBe(step.operand);
+        expect(step.total).toBeGreaterThan(0);
+      }
+    }
+  });
+
   it('with only × / ÷ on, opens with a starting number from 2 up to their max', () => {
     const rng = seededRng(11);
     const operands = new Set<number>();

@@ -137,14 +137,16 @@ function fallbackStep(
 }
 
 /**
- * The opening step sets the starting number. It is always + or − from 0, because a round
- * that opened with × or ÷ would stay at 0 for good (`0 × 4 = 0`, `0 ÷ 3 = 0`).
+ * The opening step sets the starting number. It is always + from 0: a round that opened with
+ * × or ÷ would stay at 0 for good (`0 × 4 = 0`, `0 ÷ 3 = 0`), and one that opened with − would
+ * start below 0.
  */
 function openingStep(settings: Settings, rng: RandomFn): Step {
-  const opening = stepsFor('+', 0, settings);
+  const opening = settings.enabledOps.includes('+') ? stepsFor('+', 0, settings) : [];
+  if (opening.length > 0) return pick(opening, rng);
   if (!settings.enabledOps.some(isMultiplicative)) return fallbackStep(0, settings, rng);
 
-  // No + / − step can open the round (e.g. only × / ÷ are on): start from a number × and ÷
+  // No enabled + step can open the round (e.g. only × / ÷ are on): start from a number × and ÷
   // can work with, 2..max when there is room.
   const upperBound = Math.min(multiplicativeMax(settings), settings.maxTotal);
   const lowerBound = Math.min(2, upperBound);
