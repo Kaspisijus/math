@@ -3,11 +3,18 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from './App';
 import { ANSWER_DURATION_SECONDS, ROUND_DURATION_SECONDS } from './types';
+import { playResultSound } from './sound/resultSound';
 
 vi.mock('./leaderboard/api', () => ({
   fetchLeaderboard: vi.fn().mockResolvedValue([]),
   submitScore: vi.fn(),
 }));
+
+vi.mock('./sound/resultSound', () => ({
+  playResultSound: vi.fn(),
+}));
+
+const playResultSoundMock = vi.mocked(playResultSound);
 
 function pressSpace() {
   act(() => {
@@ -356,5 +363,93 @@ describe('App', () => {
       }
     }
     expect(steps).toBe(16); // initial step + 15 spacebar presses
+  });
+});
+
+describe('App result sounds', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    playResultSoundMock.mockClear();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  async function answer(user: ReturnType<typeof userEvent.setup>, guess: string) {
+    await user.type(screen.getByPlaceholderText('Tavo atsakymas'), guess);
+    await user.click(screen.getByRole('button', { name: /Patikrinti/ }));
+  }
+
+  it('stays quiet while the answer is still being typed', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    render(<App />);
+
+    await configureAndStart(user);
+    expireRound();
+    await user.type(screen.getByPlaceholderText('Tavo atsakymas'), '1');
+
+    expect(playResultSoundMock).not.toHaveBeenCalled();
+  });
+
+  it('plays the success sound once for a correct answer', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    render(<App />);
+
+    await configureAndStart(user);
+    expireRound();
+    await answer(user, '1');
+
+    expect(screen.getByText(/Teisingai!/)).toBeInTheDocument();
+    expect(playResultSoundMock).toHaveBeenCalledTimes(1);
+    expect(playResultSoundMock).toHaveBeenCalledWith(true);
+  });
+
+  it('plays the fail sound once for a wrong answer', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    render(<App />);
+
+    await configureAndStart(user);
+    expireRound();
+    await answer(user, '999');
+
+    expect(playResultSoundMock).toHaveBeenCalledTimes(1);
+    expect(playResultSoundMock).toHaveBeenCalledWith(false);
+  });
+
+  it('plays the fail sound once when the answer time runs out, and not again afterwards', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    render(<App />);
+
+    await configureAndStart(user);
+    expireRound();
+    act(() => {
+      vi.advanceTimersByTime(ANSWER_DURATION_SECONDS * 1000);
+    });
+
+    expect(screen.getByText(/Nespėjai atsakyti!/)).toBeInTheDocument();
+    expect(playResultSoundMock).toHaveBeenCalledTimes(1);
+    expect(playResultSoundMock).toHaveBeenCalledWith(false);
+
+    act(() => {
+      vi.advanceTimersByTime(ANSWER_DURATION_SECONDS * 1000);
+    });
+    expect(playResultSoundMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('plays the sound again for the next round', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    render(<App />);
+
+    await configureAndStart(user);
+    expireRound();
+    await answer(user, '999');
+    await user.click(screen.getByRole('button', { name: 'Naujas raundas' }));
+
+    await user.click(screen.getByRole('button', { name: /Pradėti!/ }));
+    expireRound();
+    await answer(user, '1');
+
+    expect(playResultSoundMock.mock.calls).toEqual([[false], [true]]);
   });
 });
