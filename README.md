@@ -1,32 +1,29 @@
-# React + TypeScript + Vite
+# Matematikos nuotykiai
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Arithmetic practice game for kids, with a per-preset leaderboard.
 
-Currently, two official plugins are available:
+## Run locally
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Requires Node ≥ 22.18.
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm ci
+npm run server   # terminal 1: leaderboard API on http://localhost:3001
+npm run dev      # terminal 2: app on http://localhost:5173 (proxies /api to :3001)
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Open http://localhost:5173.
+
+## Other scripts
+
+| Command | What it does |
+| --- | --- |
+| `npm test` | Run the Vitest suite |
+| `npm run lint` | Lint with oxlint |
+| `npm run build` | Type-check and build into `dist/` |
+| `npm start` | Build, then serve the app and API together on port 3001 (`PORT` overrides it) |
+
+## Deploy
+
+`docker compose up -d --build` runs the app behind Caddy (`deploy/Caddyfile`).
+Leaderboard data is kept in the `leaderboard-data` volume.

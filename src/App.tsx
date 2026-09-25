@@ -24,7 +24,7 @@ function App() {
   function handleStart(newSettings: Settings, newPresetId: PresetId) {
     setSettings(newSettings);
     setPresetId(newPresetId);
-    setHistory([generateStep(0, newSettings)]);
+    setHistory([generateStep([], newSettings)]);
     setAnswerResult(null);
     setConfirmingCancel(false);
     setRoundId((id) => id + 1);
@@ -32,10 +32,7 @@ function App() {
   }
 
   const advanceGame = useCallback(() => {
-    setHistory((prev) => {
-      const lastStep = prev[prev.length - 1];
-      return [...prev, generateStep(lastStep?.total ?? 0, settings, Math.random, lastStep?.operand)];
-    });
+    setHistory((prev) => [...prev, generateStep(prev, settings)]);
   }, [settings]);
 
   const handleExpire = useCallback(() => {
