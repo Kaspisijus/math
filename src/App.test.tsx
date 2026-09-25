@@ -169,6 +169,32 @@ describe('App', () => {
     expect(screen.queryByRole('button', { name: 'Kitas (tarpas)' })).not.toBeInTheDocument();
   });
 
+  it('shows every step as a fresh number, so an identical repeat still visibly arrives', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    const { container } = render(<App />);
+    const operationDisplay = () => container.querySelector('.operation-display');
+
+    // Every step after the opening one is ×1 or ÷1, so the same text often follows itself.
+    await configureAndStart(user);
+    pressSpace();
+    const beforeSpace = operationDisplay();
+    pressSpace();
+    expect(operationDisplay()).not.toBe(beforeSpace);
+
+    const beforeClick = operationDisplay();
+    await user.click(screen.getByRole('button', { name: 'Kitas (tarpas)' }));
+    expect(operationDisplay()).not.toBe(beforeClick);
+
+    expireRound();
+    await user.type(screen.getByPlaceholderText('Tavo atsakymas'), '1');
+    await user.click(screen.getByRole('button', { name: /Patikrinti/ }));
+    await user.click(screen.getByRole('button', { name: /Peržiūrėti iš naujo/ }));
+
+    const replayed = operationDisplay();
+    pressSpace();
+    expect(operationDisplay()).not.toBe(replayed);
+  });
+
   it('opens the confirmation with Escape, closes it with Escape again, and cancels on confirm', async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     render(<App />);

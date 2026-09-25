@@ -6,23 +6,33 @@ import type { Step } from '../types';
 
 const step: Step = { op: '+', operand: 5, total: 5 };
 
-function renderGame({ secondsRemaining = 15, confirmingCancel = false } = {}) {
+function renderGame({ secondsRemaining = 15, confirmingCancel = false, stepNumber = 1 } = {}) {
   const handlers = {
     onNext: vi.fn(),
     onRequestCancel: vi.fn(),
     onDismissCancel: vi.fn(),
     onConfirmCancel: vi.fn(),
   };
-  const { container } = render(
+  const game = (props: { secondsRemaining: number; stepNumber: number }) => (
     <GameScreen
       currentStep={step}
-      secondsRemaining={secondsRemaining}
       durationSeconds={30}
       confirmingCancel={confirmingCancel}
+      {...props}
       {...handlers}
     />
   );
-  return { container, ...handlers };
+  const { container, rerender } = render(game({ secondsRemaining, stepNumber }));
+  return {
+    container,
+    rerenderWith: (props: { secondsRemaining: number; stepNumber: number }) =>
+      rerender(game(props)),
+    ...handlers,
+  };
+}
+
+function getOperationDisplay(container: HTMLElement) {
+  return container.querySelector('.operation-display') as HTMLElement;
 }
 
 function getFillWidth(container: HTMLElement) {
@@ -46,6 +56,29 @@ describe('GameScreen progress bar', () => {
   it('no longer renders a numeric seconds readout', () => {
     renderGame();
     expect(screen.queryByText(/15s/)).not.toBeInTheDocument();
+  });
+});
+
+describe('GameScreen new-step cue', () => {
+  it('shows a new number element on the next step, even when the number looks the same', () => {
+    const { container, rerenderWith } = renderGame({ stepNumber: 1 });
+    const before = getOperationDisplay(container);
+
+    rerenderWith({ secondsRemaining: 15, stepNumber: 2 });
+
+    // A fresh element replays the pop-in animation, so a repeated "+5" still visibly arrives.
+    const after = getOperationDisplay(container);
+    expect(after).not.toBe(before);
+    expect(after).toHaveTextContent('+5');
+  });
+
+  it('keeps the same number element while only the timer ticks', () => {
+    const { container, rerenderWith } = renderGame({ secondsRemaining: 15, stepNumber: 3 });
+    const before = getOperationDisplay(container);
+
+    rerenderWith({ secondsRemaining: 14, stepNumber: 3 });
+
+    expect(getOperationDisplay(container)).toBe(before);
   });
 });
 

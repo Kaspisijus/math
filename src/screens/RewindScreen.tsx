@@ -20,7 +20,9 @@ export function RewindScreen({ history, index, isCorrect, guess, onNext, onNewRo
       <p className="hint">
         {index + 1} žingsnis iš {history.length}
       </p>
-      <div className="operation-display">{formatStep(step)}</div>
+      <div key={index} className="operation-display">
+        {formatStep(step)}
+      </div>
       <div className="running-total">Bendra suma: {step.total}</div>
 
       {!isLast && <NextButton onClick={onNext} />}

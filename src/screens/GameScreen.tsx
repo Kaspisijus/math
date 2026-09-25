@@ -5,6 +5,7 @@ import { formatStep } from '../formatStep';
 
 interface Props {
   currentStep: Step;
+  stepNumber: number;
   secondsRemaining: number;
   durationSeconds: number;
   onNext: () => void;
@@ -16,6 +17,7 @@ interface Props {
 
 export function GameScreen({
   currentStep,
+  stepNumber,
   secondsRemaining,
   durationSeconds,
   onNext,
@@ -41,7 +43,11 @@ export function GameScreen({
         durationSeconds={durationSeconds}
         label="Raundo laikas"
       />
-      <div className="operation-display">{formatStep(currentStep)}</div>
+      {/* A new key per step remounts the number and replays its pop-in, so a repeat
+          (×1 after ×1) still visibly arrives. Timer ticks keep the key and don't replay it. */}
+      <div key={stepNumber} className="operation-display">
+        {formatStep(currentStep)}
+      </div>
       <NextButton onClick={onNext} />
 
       {confirmingCancel && (

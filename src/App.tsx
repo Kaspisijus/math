@@ -103,6 +103,7 @@ function App() {
       {screen === 'game' && history.length > 0 && (
         <GameScreen
           currentStep={history[history.length - 1]}
+          stepNumber={history.length}
           secondsRemaining={secondsRemaining}
           durationSeconds={ROUND_DURATION_SECONDS}
           onNext={advanceGame}

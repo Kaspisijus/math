@@ -333,6 +333,33 @@ button.danger {
   font-weight: bold;
   color: #7a3fae;
   margin: 1rem 0;
+  animation: step-pop 0.25s ease-out;
+}
+
+@keyframes step-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes step-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .operation-display {
+    animation-name: step-fade;
+  }
 }
 
 .running-total {
