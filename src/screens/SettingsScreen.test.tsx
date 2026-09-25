@@ -139,6 +139,22 @@ describe('SettingsScreen presets', () => {
     );
   });
 
+  it('puts the allow-negative label text before its checkbox, like the other rows', async () => {
+    const user = userEvent.setup();
+    const onStart = renderScreen();
+
+    const checkbox = screen.getByLabelText(/Leisti sumai/) as HTMLInputElement;
+    const row = checkbox.closest('label') as HTMLLabelElement;
+    expect(row.firstChild?.textContent).toBe('Leisti sumai nukristi žemiau 0');
+    expect(row.lastElementChild).toBe(checkbox);
+
+    await user.click(screen.getByRole('radio', { name: /Savi nustatymai/ }));
+    await user.click(screen.getByText('Leisti sumai nukristi žemiau 0'));
+    expect(checkbox).toBeChecked();
+    await user.click(screen.getByRole('button', { name: /Pradėti!/ }));
+    expect(onStart).toHaveBeenCalledWith(expect.objectContaining({ allowNegative: true }), 'custom');
+  });
+
   it('does not let custom edits leak into the presets', async () => {
     const user = userEvent.setup();
     renderScreen();

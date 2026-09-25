@@ -126,6 +126,7 @@ export function SettingsScreen({ initialPresetId, initialSettings, onStart }: Pr
       </fieldset>
 
       <label className="row">
+        Leisti sumai nukristi žemiau 0
         <input
           type="checkbox"
           checked={settings.allowNegative}
@@ -134,7 +135,6 @@ export function SettingsScreen({ initialPresetId, initialSettings, onStart }: Pr
             setCustomSettings((prev) => ({ ...prev, allowNegative: e.target.checked }))
           }
         />
-        Leisti sumai nukristi žemiau 0
       </label>
 
       <label className="row">
