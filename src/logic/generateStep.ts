@@ -141,8 +141,7 @@ function fallbackStep(
  * that opened with × or ÷ would stay at 0 for good (`0 × 4 = 0`, `0 ÷ 3 = 0`).
  */
 function openingStep(settings: Settings, rng: RandomFn): Step {
-  const opening = settings.enabledOps.filter(isAdditive).flatMap((op) => stepsFor(op, 0, settings));
-  if (opening.length > 0) return pick(opening, rng);
+  const opening = stepsFor('+', 0, settings);
   if (!settings.enabledOps.some(isMultiplicative)) return fallbackStep(0, settings, rng);
 
   // No + / − step can open the round (e.g. only × / ÷ are on): start from a number × and ÷
