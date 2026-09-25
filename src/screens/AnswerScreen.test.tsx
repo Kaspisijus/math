@@ -219,22 +219,22 @@ describe('AnswerScreen while answering', () => {
   });
 
 
-  it('shows a filling 15-second answer bar', () => {
+  it('shows a filling 20-second answer bar', () => {
     render(<Harness onSubmitted={vi.fn()} />);
     const bar = screen.getByRole('progressbar', { name: 'Laikas atsakymui' });
     expect(bar).toHaveAttribute('aria-valuenow', '0');
 
-    advance(7_500);
+    advance(10_000);
     expect(Number(bar.getAttribute('aria-valuenow'))).toBeGreaterThanOrEqual(46);
     expect(Number(bar.getAttribute('aria-valuenow'))).toBeLessThanOrEqual(50);
   });
 
-  it('does nothing before the 15 seconds are up', () => {
+  it('does nothing before the 20 seconds are up, even past the old 15 s limit', () => {
     const onSubmitted = vi.fn();
     render(<Harness onSubmitted={onSubmitted} />);
     typeGuess('7');
 
-    advance(14_000);
+    advance(19_000);
     expect(onSubmitted).not.toHaveBeenCalled();
     expect(screen.getByPlaceholderText('Tavo atsakymas')).toBeInTheDocument();
   });
@@ -244,7 +244,7 @@ describe('AnswerScreen while answering', () => {
     render(<Harness onSubmitted={onSubmitted} />);
     typeGuess('7');
 
-    advance(15_000);
+    advance(20_000);
     expect(onSubmitted).toHaveBeenCalledWith(7);
     expect(screen.getByText(/Teisingai!/)).toBeInTheDocument();
   });
@@ -253,7 +253,7 @@ describe('AnswerScreen while answering', () => {
     const onSubmitted = vi.fn();
     render(<Harness onSubmitted={onSubmitted} />);
 
-    advance(15_000);
+    advance(20_000);
     expect(onSubmitted).toHaveBeenCalledWith(null);
     expect(screen.getByText('Nespėjai atsakyti! Teisingas atsakymas buvo 7.')).toBeInTheDocument();
   });
@@ -264,7 +264,7 @@ describe('AnswerScreen while answering', () => {
     typeGuess('3');
     fireEvent.click(screen.getByRole('button', { name: 'Patikrinti' }));
 
-    advance(15_000);
+    advance(20_000);
     expect(onSubmitted).toHaveBeenCalledTimes(1);
     expect(onSubmitted).toHaveBeenCalledWith(3);
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();

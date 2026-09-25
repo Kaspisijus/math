@@ -16,4 +16,4 @@ export interface Step {
 }
 
 export const ROUND_DURATION_SECONDS = 60;
-export const ANSWER_DURATION_SECONDS = 15;
+export const ANSWER_DURATION_SECONDS = 20;

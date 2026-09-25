@@ -233,7 +233,7 @@ describe('App', () => {
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 
-  it('hides the last number on the answer page and counts a silent 15 s as no answer', async () => {
+  it('hides the last number on the answer page and counts a silent 20 s as no answer', async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     render(<App />);
 
