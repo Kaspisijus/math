@@ -33,8 +33,8 @@ function expireRound() {
 
 async function configureAndStart(user: ReturnType<typeof userEvent.setup>) {
   // Addition/subtraction is enabled by default; switch to multiplication/division
-  // and cap its operand at 1, so every generated step is a deterministic
-  // identity step (×1 or ÷1) and the running total stays at 0 throughout.
+  // and cap its operand at 1, so the round opens with +1 and every later step is a
+  // deterministic identity step (×1 or ÷1) that keeps the running total at 1.
   await chooseCustom(user);
   await user.click(screen.getByLabelText(/Sudėtis \/ Atimtis/));
   await user.click(screen.getByLabelText(/Daugyba \/ Dalyba/));
@@ -63,9 +63,9 @@ describe('App', () => {
 
     await configureAndStart(user);
 
-    expect(screen.getByText(/^[×÷]\s*1$/)).toBeInTheDocument();
+    expect(screen.getByText(/^\+1$/)).toBeInTheDocument();
 
-    // Press space twice more -> 3 steps total, total stays 0 throughout.
+    // Press space twice more -> 3 steps total, total stays 1 throughout.
     pressSpace();
     pressSpace();
     expect(screen.getByText(/^[×÷]\s*1$/)).toBeInTheDocument();
@@ -75,19 +75,19 @@ describe('App', () => {
     expect(screen.getByText(/Laikas baigėsi/)).toBeInTheDocument();
     expect(screen.getByText(/Iš viso peržiūrėjai 3 skaičių/)).toBeInTheDocument();
 
-    await user.type(screen.getByPlaceholderText('Tavo atsakymas'), '0');
+    await user.type(screen.getByPlaceholderText('Tavo atsakymas'), '1');
     await user.click(screen.getByRole('button', { name: /Patikrinti/ }));
 
     expect(screen.getByText(/Teisingai!/)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /Peržiūrėti iš naujo/ }));
 
-    expect(screen.getByText('Bendra suma: 0')).toBeInTheDocument();
+    expect(screen.getByText('Bendra suma: 1')).toBeInTheDocument();
     pressSpace();
-    expect(screen.getByText('Bendra suma: 0')).toBeInTheDocument();
+    expect(screen.getByText('Bendra suma: 1')).toBeInTheDocument();
     pressSpace();
-    expect(screen.getByText('Bendra suma: 0')).toBeInTheDocument();
-    expect(screen.getByText(/Tu atsakei 0 — teisingai!/i)).toBeInTheDocument();
+    expect(screen.getByText('Bendra suma: 1')).toBeInTheDocument();
+    expect(screen.getByText(/Tu atsakei 1 — teisingai!/i)).toBeInTheDocument();
   });
 
   it('shows the correct total when the guess is wrong', async () => {
@@ -101,7 +101,7 @@ describe('App', () => {
     await user.type(screen.getByPlaceholderText('Tavo atsakymas'), '999');
     await user.click(screen.getByRole('button', { name: /Patikrinti/ }));
 
-    expect(screen.getByText(/Tu atsakei 999, o teisingas atsakymas buvo 0/)).toBeInTheDocument();
+    expect(screen.getByText(/Tu atsakei 999, o teisingas atsakymas buvo 1/)).toBeInTheDocument();
   });
 
   it('auto-transitions from the game screen to the answer screen when the timer expires', async () => {
@@ -109,7 +109,7 @@ describe('App', () => {
     render(<App />);
 
     await configureAndStart(user);
-    expect(screen.getByText(/^[×÷]\s*1$/)).toBeInTheDocument();
+    expect(screen.getByText(/^\+1$/)).toBeInTheDocument();
 
     expireRound();
 
@@ -150,7 +150,7 @@ describe('App', () => {
 
     expect(screen.getByText(/Iš viso peržiūrėjai 3 skaičių/)).toBeInTheDocument();
 
-    await user.type(screen.getByPlaceholderText('Tavo atsakymas'), '0');
+    await user.type(screen.getByPlaceholderText('Tavo atsakymas'), '1');
     await user.click(screen.getByRole('button', { name: /Patikrinti/ }));
     await user.click(screen.getByRole('button', { name: /Peržiūrėti iš naujo/ }));
 
@@ -238,21 +238,21 @@ describe('App', () => {
     render(<App />);
 
     await configureAndStart(user);
-    expect(screen.getByText(/^[×÷]\s*1$/)).toBeInTheDocument();
+    expect(screen.getByText(/^\+1$/)).toBeInTheDocument();
     expireRound();
 
     // Children read a visible last number as one more step to add, so it must be gone.
-    expect(screen.queryByText(/^[×÷]\s*1$/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^\+1$/)).not.toBeInTheDocument();
     expect(screen.queryByText(/Paskutinis skaičius/)).not.toBeInTheDocument();
     act(() => {
       vi.advanceTimersByTime(ANSWER_DURATION_SECONDS * 1000);
     });
 
-    expect(screen.getByText('Nespėjai atsakyti! Teisingas atsakymas buvo 0.')).toBeInTheDocument();
+    expect(screen.getByText('Nespėjai atsakyti! Teisingas atsakymas buvo 1.')).toBeInTheDocument();
     expect(screen.queryByLabelText('Vardas')).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /Peržiūrėti iš naujo/ }));
-    expect(screen.getByText('Nespėjai atsakyti, teisingas atsakymas buvo 0.')).toBeInTheDocument();
+    expect(screen.getByText('Nespėjai atsakyti, teisingas atsakymas buvo 1.')).toBeInTheDocument();
   });
 
   it('lasts exactly 60 seconds', async () => {
